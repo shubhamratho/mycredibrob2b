@@ -1,0 +1,138 @@
+/* Admin Dashboard Mobile Optimizations */
+
+/* Mobile-first responsive design */
+@media (max-width: 640px) {
+  /* Ensure proper spacing on mobile */
+  .admin-container {
+    padding: 1rem;
+  }
+  
+  /* Mobile card styling */
+  .mobile-referral-card {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Responsive grid for mobile */
+  .mobile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Mobile status badge */
+  .mobile-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  
+  /* Success notification positioning */
+  .success-notification {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    background: #10b981;
+    color: white;
+    padding: 0.75rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    font-size: 0.875rem;
+    text-align: center;
+  }
+}
+
+/* Tablet optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .admin-table {
+    font-size: 0.875rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.5rem;
+  }
+}
+
+/* Desktop optimizations */
+@media (min-width: 1025px) {
+  .admin-table {
+    font-size: 1rem;
+  }
+  
+  .admin-table th,
+  .admin-table td {
+    padding: 0.75rem;
+  }
+}
+
+/* Loading and disabled states */
+.status-select-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Smooth transitions */
+.admin-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.admin-card:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Success notification animation */
+.notification-enter {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notification-exit {
+  animation: slideOutRight 0.3s ease-in;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Responsive text sizing */
+.mobile-text-xs { font-size: 0.75rem; }
+.mobile-text-sm { font-size: 0.875rem; }
+
+/* Mobile-friendly button sizing */
+@media (max-width: 640px) {
+  .mobile-btn {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .mobile-select {
+    font-size: 0.75rem;
+    min-height: 2rem;
+  }
+}
