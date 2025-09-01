@@ -2,5 +2,20 @@
   command = "npm run build"
   publish = ".next"
 
+[build.environment]
+  # Disable secrets scanning for specific keys that are safe to be public
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY"
+  NODE_VERSION = "18"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+# Environment variables for different contexts
+[context.production.environment]
+  NODE_VERSION = "18"
+
+[context.deploy-preview.environment]
+  NODE_VERSION = "18"
+
+[context.branch-deploy.environment]
+  NODE_VERSION = "18"
