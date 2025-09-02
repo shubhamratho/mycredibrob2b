@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { maskMobileNumber } from '@/lib/maskingUtils'
 
 interface Referral {
   id: string
@@ -98,7 +99,7 @@ export function ReferralsTable({ referrals, onRefresh }: ReferralsTableProps) {
               filteredReferrals.map((referral) => (
                 <TableRow key={referral.id}>
                   <TableCell className="font-medium">{referral.name}</TableCell>
-                  <TableCell>{referral.mobile_no}</TableCell>
+                  <TableCell>{maskMobileNumber(referral.mobile_no)}</TableCell>
                   <TableCell>{formatDate(referral.created_at)}</TableCell>
                   <TableCell>{getStatusBadge(referral.status)}</TableCell>
                 </TableRow>

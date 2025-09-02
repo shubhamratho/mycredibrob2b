@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ interface FormData {
   employmentType: 'salaried' | 'self-employed' | ''
   employerName: string
   monthlyNetIncome: string
+  referralDigit: string
   termsAccepted: boolean
 }
 
@@ -38,16 +39,11 @@ export default function ReferralFormPage() {
     employmentType: '',
     employerName: '',
     monthlyNetIncome: '',
+    referralDigit: '',
     termsAccepted: false
   })
 
-  useEffect(() => {
-    if (refCode) {
-      checkReferrer()
-    }
-  }, [refCode])
-
-  const checkReferrer = async () => {
+  const checkReferrer = useCallback(async () => {
     try {
       setLoading(true)
       
@@ -70,7 +66,13 @@ export default function ReferralFormPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [refCode])
+
+  useEffect(() => {
+    if (refCode) {
+      checkReferrer()
+    }
+  }, [refCode, checkReferrer])
 
   const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({
@@ -79,16 +81,68 @@ export default function ReferralFormPage() {
     }))
   }
 
+  // Validation functions
+  const validateMobileNumber = (mobile: string): string | null => {
+    const cleanMobile = mobile.replace(/[^\d]/g, '')
+    if (cleanMobile.length !== 10) {
+      return 'Mobile number must be exactly 10 digits'
+    }
+    if (!cleanMobile.match(/^[6-9]/)) {
+      return 'Mobile number must start with 6, 7, 8, or 9'
+    }
+    return null
+  }
+
+  const validatePincode = (pincode: string): string | null => {
+    const cleanPincode = pincode.replace(/[^\d]/g, '')
+    if (cleanPincode.length !== 6) {
+      return 'Pincode must be exactly 6 digits'
+    }
+    return null
+  }
+
+  const validateReferralDigit = (digit: string): string | null => {
+    if (!digit.trim()) return null // Optional field
+    const cleanDigit = digit.replace(/[^\d]/g, '')
+    if (cleanDigit.length !== 3) {
+      return 'Referral digit must be exactly 3 digits'
+    }
+    return null
+  }
+
+  const validateForm = (): string | null => {
+    // Mobile number validation
+    const mobileError = validateMobileNumber(formData.mobileNo)
+    if (mobileError) return mobileError
+
+    // Pincode validation
+    const pincodeError = validatePincode(formData.residencyPincode)
+    if (pincodeError) return pincodeError
+
+    // Referral digit validation (optional)
+    const referralDigitError = validateReferralDigit(formData.referralDigit)
+    if (referralDigitError) return referralDigitError
+
+    // Employment type validation
+    if (formData.employmentType === 'salaried' && !formData.employerName.trim()) {
+      return 'Employer name is required for salaried employees'
+    }
+
+    // Terms validation
+    if (!formData.termsAccepted) {
+      return 'Please accept the terms and conditions'
+    }
+
+    return null
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.termsAccepted) {
-      setError('Please accept the terms and conditions')
-      return
-    }
-
-    if (formData.employmentType === 'salaried' && !formData.employerName.trim()) {
-      setError('Employer name is required for salaried employees')
+    // Validate form
+    const validationError = validateForm()
+    if (validationError) {
+      setError(validationError)
       return
     }
 
@@ -96,16 +150,34 @@ export default function ReferralFormPage() {
       setSubmitting(true)
       setError('')
 
+      let referralDigitUserId = null
+      
+      // If referral digit is provided, find the user with that digit
+      if (formData.referralDigit.trim()) {
+        const { data: referralUser, error: referralError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('referral_digit', formData.referralDigit.trim())
+          .single()
+
+        if (referralError || !referralUser) {
+          setError('Invalid referral digit. Please check and try again.')
+          return
+        }
+        referralDigitUserId = referralUser.id
+      }
+
       const { error: insertError } = await supabase
         .from('referrals')
         .insert({
           referrer_user_id: refCode,
           name: formData.name.trim(),
-          mobile_no: formData.mobileNo.trim(),
-          residency_pincode: formData.residencyPincode.trim(),
+          mobile_no: formData.mobileNo.replace(/[^\d]/g, ''), // Store only digits
+          residency_pincode: formData.residencyPincode.replace(/[^\d]/g, ''), // Store only digits
           employment_type: formData.employmentType,
           employer_name: formData.employmentType === 'salaried' ? formData.employerName.trim() : null,
           monthly_net_income: parseFloat(formData.monthlyNetIncome),
+          referral_digit: formData.referralDigit.trim() || null,
           terms_accepted_at: new Date().toISOString(),
           status: 'InProgress'
         })
@@ -115,9 +187,9 @@ export default function ReferralFormPage() {
       }
 
       setSuccess(true)
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error submitting referral:', err)
-      setError(err.message || 'Failed to submit referral. Please try again.')
+      setError((err as Error).message || 'Failed to submit referral. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -164,7 +236,7 @@ export default function ReferralFormPage() {
           <CardHeader>
             <CardTitle className="text-green-600">Application Submitted!</CardTitle>
             <CardDescription>
-              Thank you for your application. We'll review it and get back to you soon.
+              Thank you for your application. We&apos;ll review it and get back to you soon.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -172,7 +244,7 @@ export default function ReferralFormPage() {
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-sm text-green-700">
                   Your referral has been successfully submitted and is now in progress.
-                  You'll be contacted shortly for the next steps.
+                  You&apos;ll be contacted shortly for the next steps.
                 </p>
               </div>
               <Button 
@@ -267,10 +339,20 @@ export default function ReferralFormPage() {
                       type="tel"
                       required
                       value={formData.mobileNo}
-                      onChange={(e) => handleInputChange('mobileNo', e.target.value)}
-                      placeholder="Enter your mobile number"
+                      onChange={(e) => {
+                        // Only allow numbers and limit to 10 digits
+                        const value = e.target.value.replace(/[^\d]/g, '').slice(0, 10)
+                        handleInputChange('mobileNo', value)
+                      }}
+                      placeholder="Enter your 10-digit mobile number"
                       className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md"
+                      maxLength={10}
                     />
+                    {formData.mobileNo && validateMobileNumber(formData.mobileNo) && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {validateMobileNumber(formData.mobileNo)}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2 md:col-span-2">
@@ -282,10 +364,20 @@ export default function ReferralFormPage() {
                       type="text"
                       required
                       value={formData.residencyPincode}
-                      onChange={(e) => handleInputChange('residencyPincode', e.target.value)}
-                      placeholder="Enter your area pincode"
+                      onChange={(e) => {
+                        // Only allow numbers and limit to 6 digits
+                        const value = e.target.value.replace(/[^\d]/g, '').slice(0, 6)
+                        handleInputChange('residencyPincode', value)
+                      }}
+                      placeholder="Enter your 6-digit pincode"
                       className="h-11 border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md max-w-xs"
+                      maxLength={6}
                     />
+                    {formData.residencyPincode && validatePincode(formData.residencyPincode) && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {validatePincode(formData.residencyPincode)}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -361,27 +453,25 @@ export default function ReferralFormPage() {
                 </div>
               </div>
 
-              {/* Terms and Conditions */}
-              <div className="space-y-6">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-start space-x-3">
-                    <Checkbox
-                      id="terms"
-                      checked={formData.termsAccepted}
-                      onCheckedChange={(checked) => handleInputChange('termsAccepted', checked as boolean)}
-                      className="mt-1"
-                    />
-                    <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
-                      I have read and agree to the{' '}
-                      <a href="/terms" target="_blank" className="text-blue-600 hover:text-blue-700 font-semibold underline">
-                        Terms and Conditions
-                      </a>{' '}
-                      and{' '}
-                      <a href="/privacy" target="_blank" className="text-blue-600 hover:text-blue-700 font-semibold underline">
-                        Privacy Policy
-                      </a>. I consent to the processing of my personal data for application review and processing purposes.
-                    </label>
-                  </div>
+              {/* Terms and Conditions - Header removed */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="terms"
+                    checked={formData.termsAccepted}
+                    onCheckedChange={(checked) => handleInputChange('termsAccepted', checked as boolean)}
+                    className="mt-1"
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed">
+                    I have read and agree to the{' '}
+                    <a href="/terms" target="_blank" className="text-blue-600 hover:text-blue-700 font-semibold underline">
+                      Terms and Conditions
+                    </a>{' '}
+                    and{' '}
+                    <a href="/privacy" target="_blank" className="text-blue-600 hover:text-blue-700 font-semibold underline">
+                      Privacy Policy
+                    </a>. I consent to the processing of my personal data for application review and processing purposes.
+                  </label>
                 </div>
               </div>
             </CardContent>

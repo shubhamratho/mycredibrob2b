@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -8,12 +8,14 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { QRCodeGenerator } from '@/components/QRCodeGenerator'
 import { ReferralsTable } from '@/components/ReferralsTable'
-import { LogOut, Users, TrendingUp, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { LogOut, Users, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { generateUniqueReferralDigit } from '@/lib/referralUtils'
 
 interface Profile {
   id: string
   name: string
   mobile_no: string
+  referral_digit: string | null
   is_admin: boolean
   created_at: string
 }
@@ -59,9 +61,9 @@ export default function DashboardPage() {
     if (user) {
       fetchUserData()
     }
-  }, [user, authLoading, router])
+  }, [user, authLoading, router, fetchUserData])
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!user) return
 
     try {
@@ -89,6 +91,29 @@ export default function DashboardPage() {
       }
 
       setProfile(profileData)
+
+      // Check if user needs a referral digit and assign one
+      if (!profileData.referral_digit) {
+        try {
+          // Generate a unique 3-digit code using our utility function
+          const digit = await generateUniqueReferralDigit()
+          
+          // Update the profile with the new digit
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ referral_digit: digit })
+            .eq('id', user.id)
+          
+          if (!updateError) {
+            // Update local state
+            setProfile({ ...profileData, referral_digit: digit })
+          } else {
+            console.error('Error updating referral digit:', updateError)
+          }
+        } catch (err) {
+          console.error('Could not assign referral digit:', err)
+        }
+      }
 
       // Fetch referrals using the masked view - only the required fields
       const { data: referralsData, error: referralsError } = await supabase
@@ -139,7 +164,7 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
 
   const handleSignOut = async () => {
     await signOut()
@@ -274,6 +299,43 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <QRCodeGenerator referralLink={referralLink} userId={user?.id || ''} />
+              </CardContent>
+            </Card>
+            
+            {/* Referral Digit Card */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Your Referral Digit</CardTitle>
+                <CardDescription>
+                  Your unique 3-digit referral code for manual referrals
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center">
+                  <div className="text-4xl font-bold text-blue-600 bg-blue-50 rounded-lg py-4 px-6 inline-block">
+                    {profile?.referral_digit || 'Pending...'}
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    {profile?.referral_digit 
+                      ? 'Share this 3-digit code for customers to enter manually'
+                      : 'Your referral digit will be assigned shortly'
+                    }
+                  </p>
+                  
+                  {profile?.referral_digit && (
+                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-700 font-medium mb-2">
+                        Universal Application Link:
+                      </p>
+                      <div className="bg-white border rounded p-2 text-xs text-gray-600 break-all">
+                        {baseUrl}/apply?ref={profile.referral_digit}
+                      </div>
+                      <p className="text-xs text-green-600 mt-2">
+                        Customers can use this link OR enter code {profile.referral_digit} manually at /apply
+                      </p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>

@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { RefreshCw, Users, Clock, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react'
+import { maskMobileNumber } from '@/lib/maskingUtils'
 
 interface Referral {
   id: string
@@ -190,8 +191,8 @@ export default function AdminDashboardContent() {
   }
 
   const maskMobile = (mobile: string) => {
-    if (!showSensitiveData && mobile.length >= 6) {
-      return mobile.substring(0, 2) + 'xxxxx' + mobile.substring(mobile.length - 2)
+    if (!showSensitiveData) {
+      return maskMobileNumber(mobile)
     }
     return mobile
   }

@@ -249,7 +249,7 @@ const handleSignup = async () => {
   if (error) {
     console.error('Signup failed:', error.message)
   } else {
-    console.log('User created:', data.user)
+    // User created successfully
   }
 }
 
@@ -268,7 +268,7 @@ const handleReferralSubmit = async (refCode: string, formData: any) => {
   if (error) {
     console.error('Referral submission failed:', error.message)
   } else {
-    console.log('Referral submitted:', data)
+    // Referral submitted successfully
   }
 }
 
@@ -283,7 +283,7 @@ const handleStatusUpdate = async (referralId: string, newStatus: string, adminId
   if (error) {
     console.error('Status update failed:', error.message)
   } else {
-    console.log('Status updated:', data)
+    // Status updated successfully
   }
 }
 
@@ -302,7 +302,7 @@ const loadDashboardData = async (userId: string) => {
   if (profileError || referralsError || statsError) {
     console.error('Error loading dashboard data')
   } else {
-    console.log('Dashboard data loaded:', { profile, referrals, stats })
+    // Dashboard data loaded successfully
   }
 }
 */

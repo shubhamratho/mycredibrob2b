@@ -8,8 +8,8 @@ import { CheckCircle, XCircle, AlertCircle, Database, FileText, Play } from 'luc
 
 export function DatabaseSetupGuide() {
   const [testing, setTesting] = useState(false)
-  const [connectionResult, setConnectionResult] = useState<any>(null)
-  const [tableResults, setTableResults] = useState<any[]>([])
+  const [connectionResult, setConnectionResult] = useState<{ success: boolean; error?: string; message?: string } | null>(null)
+  const [tableResults, setTableResults] = useState<Array<{ name: string; exists: boolean; error?: string }>>([])
 
   const testConnection = async () => {
     setTesting(true)
@@ -87,7 +87,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here`}
                   <li>Navigate to SQL Editor</li>
                   <li>Create a new query</li>
                   <li>Paste the migration SQL</li>
-                  <li>Click "Run" to execute</li>
+                  <li>Click &quot;Run&quot; to execute</li>
                 </ol>
               </div>
             </div>

@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { RefreshCw, Users, Clock, CheckCircle, XCircle, Eye, EyeOff, LogOut } from 'lucide-react'
+import { maskMobileNumber } from '@/lib/maskingUtils'
 import './admin.css'
 
 interface Referral {
@@ -20,6 +21,7 @@ interface Referral {
   employment_type: 'salaried' | 'self-employed'
   employer_name: string | null
   monthly_net_income: number
+  referral_digit: string | null
   terms_accepted_at: string
   status: 'InProgress' | 'Approved' | 'Decline'
   processed_by: string | null
@@ -28,6 +30,7 @@ interface Referral {
   referrer_name?: string
   referrer_mobile?: string
   referrer_rm_name?: string
+  referrer_digit?: string
 }
 
 interface ReferralStats {
@@ -122,7 +125,7 @@ export default function AdminDashboard() {
         .from('referrals')
         .select(`
           *,
-          referrer:profiles!referrer_user_id(name, mobile_no, rm_name)
+          referrer:profiles!referrer_user_id(name, mobile_no, rm_name, referral_digit)
         `)
         .order('created_at', { ascending: false })
 
@@ -137,7 +140,8 @@ export default function AdminDashboard() {
         ...referral,
         referrer_name: referral.referrer?.name || 'Unknown',
         referrer_mobile: referral.referrer?.mobile_no || 'N/A',
-        referrer_rm_name: referral.referrer?.rm_name || 'N/A'
+        referrer_rm_name: referral.referrer?.rm_name || 'N/A',
+        referrer_digit: referral.referrer?.referral_digit || 'N/A'
       })) || []
 
       setReferrals(transformedData)
@@ -223,7 +227,7 @@ export default function AdminDashboard() {
         return
       }
 
-      console.log('Status updated successfully:', data[0])
+      // Status updated successfully
 
       // Update local state and recalculate stats in one operation
       setReferrals(prev => {
@@ -319,8 +323,8 @@ export default function AdminDashboard() {
   }
 
   const maskMobile = (mobile: string) => {
-    if (!showSensitiveData && mobile.length >= 6) {
-      return mobile.substring(0, 2) + 'xxxxx' + mobile.substring(mobile.length - 2)
+    if (!showSensitiveData) {
+      return maskMobileNumber(mobile)
     }
     return mobile
   }
@@ -601,6 +605,8 @@ export default function AdminDashboard() {
                     <TableHead className="text-xs sm:text-sm">Employer</TableHead>
                     <TableHead className="text-xs sm:text-sm">Income</TableHead>
                     <TableHead className="text-xs sm:text-sm">Referrer</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Ref. Digit</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Entered Digit</TableHead>
                     <TableHead className="text-xs sm:text-sm">RM Name</TableHead>
                     <TableHead className="text-xs sm:text-sm">Status</TableHead>
                     <TableHead className="text-xs sm:text-sm">Date</TableHead>
@@ -609,7 +615,7 @@ export default function AdminDashboard() {
                 <TableBody>
                   {filteredReferrals.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center text-muted-foreground">
+                      <TableCell colSpan={12} className="text-center text-muted-foreground">
                         No referrals found
                       </TableCell>
                     </TableRow>
@@ -627,6 +633,20 @@ export default function AdminDashboard() {
                             <div className="font-medium">{referral.referrer_name}</div>
                             <div className="text-gray-500">{maskMobile(referral.referrer_mobile || '')}</div>
                           </div>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          <Badge variant="outline" className="font-mono">
+                            {referral.referrer_digit}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          {referral.referral_digit ? (
+                            <Badge variant="secondary" className="font-mono">
+                              {referral.referral_digit}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-xs sm:text-sm">{referral.referrer_rm_name}</TableCell>
                         <TableCell>
