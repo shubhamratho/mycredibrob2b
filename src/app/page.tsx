@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Logo } from '@/components/Logo'
 import { QrCode, Hash, ArrowRight } from 'lucide-react'
 
 export default function HomePage() {
@@ -36,8 +37,11 @@ export default function HomePage() {
         <div className="container mx-auto px-4 py-16">
           {/* Header */}
           <div className="text-center mb-12">
+            <div className="flex justify-center mb-6">
+              <Logo size="xl" />
+            </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-              MyCrediBro B2B
+              B2B Referral Platform
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Streamlined loan referral system with dual tracking methods

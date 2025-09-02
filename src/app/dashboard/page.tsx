@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { QRCodeGenerator } from '@/components/QRCodeGenerator'
 import { ReferralsTable } from '@/components/ReferralsTable'
+import { Logo } from '@/components/Logo'
 import { LogOut, Users, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { generateUniqueReferralDigit } from '@/lib/referralUtils'
 
@@ -51,17 +52,6 @@ export default function DashboardPage() {
 
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : ''
   const referralLink = user ? `${baseUrl}/r/${user.id}` : ''
-
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push('/login')
-      return
-    }
-
-    if (user) {
-      fetchUserData()
-    }
-  }, [user, authLoading, router, fetchUserData])
 
   const fetchUserData = useCallback(async () => {
     if (!user) return
@@ -166,6 +156,17 @@ export default function DashboardPage() {
     }
   }, [user])
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/login')
+      return
+    }
+
+    if (user) {
+      fetchUserData()
+    }
+  }, [user, authLoading, router, fetchUserData])
+
   const handleSignOut = async () => {
     await signOut()
     router.push('/login')
@@ -231,9 +232,12 @@ export default function DashboardPage() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-              <p className="text-gray-600">Welcome back, {profile?.name}!</p>
+            <div className="flex items-center space-x-6">
+              <Logo size="lg" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-600">Welcome back, {profile?.name}!</p>
+              </div>
             </div>
             <Button variant="outline" onClick={handleSignOut}>
               <LogOut className="h-4 w-4 mr-2" />

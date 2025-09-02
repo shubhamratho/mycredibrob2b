@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { RefreshCw, Users, Clock, CheckCircle, XCircle, Eye, EyeOff, LogOut } from 'lucide-react'
 import { maskMobileNumber } from '@/lib/maskingUtils'
+import { Logo } from '@/components/Logo'
 import './admin.css'
 
 interface Referral {
@@ -382,9 +383,12 @@ export default function AdminDashboard() {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-              <p className="text-gray-600">Manage all referrals and track performance</p>
+            <div className="flex items-center space-x-6">
+              <Logo size="lg" />
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+                <p className="text-gray-600">Manage all referrals and track performance</p>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="hidden sm:block text-sm text-gray-600">

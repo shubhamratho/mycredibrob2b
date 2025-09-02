@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Logo } from '@/components/Logo'
 import { Lock, AlertCircle } from 'lucide-react'
 
 export default function AdminLogin() {
@@ -74,6 +75,7 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <Logo size="lg" className="justify-center mb-4" />
           <div className="flex justify-center mb-4">
             <div className="bg-blue-100 p-3 rounded-full">
               <Lock className="h-6 w-6 text-blue-600" />
