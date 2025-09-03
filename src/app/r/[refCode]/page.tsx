@@ -248,12 +248,6 @@ export default function ReferralFormPage() {
                   You&apos;ll be contacted shortly for the next steps.
                 </p>
               </div>
-              <Button 
-                onClick={() => router.push('/login')} 
-                className="w-full"
-              >
-                Go to Login
-              </Button>
             </div>
           </CardContent>
         </Card>

@@ -228,12 +228,6 @@ function ApplicationForm() {
                   You&apos;ll be contacted shortly for the next steps.
                 </p>
               </div>
-              <Button 
-                onClick={() => router.push('/')} 
-                className="w-full"
-              >
-                Back to Home
-              </Button>
             </div>
           </CardContent>
         </Card>
