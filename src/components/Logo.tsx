@@ -16,7 +16,7 @@ export function Logo({ className = '', size = 'md' }: LogoProps) {
       className={`font-sans font-bold ${sizeClasses[size]} flex items-center ${className}`}
     >
       <span className="text-gray-400">My</span>
-      <span className="text-black">Credibro</span>
+      <span className="text-black">CrediBro</span>
     </div>
   )
 }
